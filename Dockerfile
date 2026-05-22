@@ -1,43 +1,75 @@
 # syntax=docker/dockerfile:1
+# CloakBrowser MCP — Stealth Chromium + Playwright MCP Server
+# Runs CloakBrowser (CDP backend) + @playwright/mcp (MCP frontend)
+
 FROM cloakhq/cloakbrowser:latest
 
 # Environment defaults
-ENV PORT=8931
-ENV HOST=0.0.0.0
+ENV CDP_PORT=8931
+ENV MCP_PORT=3000
 ENV HEADLESS=true
 ENV PROXY_SERVER=""
+ENV STORAGE_STATE=""
+ENV ISOLATED=false
 
-# Create entrypoint script
-RUN mkdir -p /docker-entrypoint.d && \
-    cat > /docker-entrypoint.sh << 'ENTRYPOINT'
+# Install @playwright/mcp (Node.js is already in cloakhq/cloakbrowser)
+RUN npm install -g @playwright/mcp@latest
+
+# Entrypoint: start CloakBrowser CDP, then MCP server
+RUN cat > /docker-entrypoint.sh << 'ENTRYPOINT'
 #!/bin/bash
 set -e
 
-# Build cloakserve arguments
-ARGS=()
+# ── 1. Start CloakBrowser (CDP backend) ──
+CLOAK_ARGS=()
+[ "${HEADLESS}" = "false" ] && CLOAK_ARGS+=(--headless=false)
+[ -n "${PROXY_SERVER}" ] && CLOAK_ARGS+=(--proxy-server="${PROXY_SERVER}")
 
-# Headless mode
-if [ "${HEADLESS}" = "false" ]; then
-  ARGS+=(--headless=false)
-fi
+echo "🦊 Starting CloakBrowser CDP on :${CDP_PORT}..."
+cloakserve --remote-debugging-port="${CDP_PORT}" "${CLOAK_ARGS[@]}" &
+CLOAK_PID=$!
+echo "   PID: ${CLOAK_PID}"
 
-# Proxy
-if [ -n "${PROXY_SERVER}" ]; then
-  ARGS+=(--proxy-server="${PROXY_SERVER}")
-fi
+# Wait for CDP readiness
+echo "⏳ Waiting for CloakBrowser..."
+for i in $(seq 1 30); do
+  if curl -sf "http://127.0.0.1:${CDP_PORT}/json/version" >/dev/null 2>&1; then
+    echo "✅ CloakBrowser ready"
+    break
+  fi
+  [ "$i" -eq 30 ] && { echo "❌ CloakBrowser failed to start"; exit 1; }
+  sleep 1
+done
 
-# Start cloakserve on the configured port
-# cloakserve binds to 0.0.0.0 by default in Docker
-exec cloakserve --remote-debugging-port="${PORT}" "${ARGS[@]}"
+# ── 2. Start @playwright/mcp (MCP frontend) ──
+echo "🔧 Starting @playwright/mcp on :${MCP_PORT}..."
+
+MCP_ARGS=(--port "${MCP_PORT}")
+[ "${ISOLATED}" = "true" ] && MCP_ARGS+=(--isolated)
+[ -n "${STORAGE_STATE}" ] && MCP_ARGS+=(--storage-state="${STORAGE_STATE}")
+
+# Cleanup on exit
+cleanup() {
+  echo "🛑 Shutting down..."
+  kill "${CLOAK_PID}" 2>/dev/null
+  wait "${CLOAK_PID}" 2>/dev/null
+  echo "✅ Done"
+}
+trap cleanup EXIT INT TERM
+
+# Connect MCP to CloakBrowser via CDP
+exec npx @playwright/mcp@latest \
+  --cdp-endpoint="http://127.0.0.1:${CDP_PORT}" \
+  "${MCP_ARGS[@]}"
 ENTRYPOINT
 
 RUN chmod +x /docker-entrypoint.sh
 
-# Expose the CDP port
-EXPOSE ${PORT}
+# Ports
+EXPOSE ${CDP_PORT} ${MCP_PORT}
 
-# Healthcheck — check if CDP is responding
+# Healthcheck
 HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/json/version')" || exit 1
+  CMD curl -sf "http://127.0.0.1:${CDP_PORT}/json/version" || exit 1
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

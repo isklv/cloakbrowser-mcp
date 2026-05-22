@@ -1,19 +1,18 @@
-version: "3.8"
-
 services:
-  cloakbrowser:
+  cloakbrowser-mcp:
     build: .
-    container_name: cloakbrowser
-    ports:
-      - "8931:8931"
+    container_name: cloakbrowser-mcp
     environment:
-      - PORT=8931
-      - HOST=0.0.0.0
+      - CDP_PORT=8931
+      - MCP_PORT=3000
       - HEADLESS=true
-      # - PROXY_SERVER=http://user:pass@proxy:8080
+      - PROXY_SERVER=
+      - ISOLATED=false
+    ports:
+      - "8931:8931"   # CDP (прямой доступ для отладки)
+      - "3000:3000"   # MCP Server-Sent Events
     restart: unless-stopped
-    # Increase file descriptor limits for Chromium
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
+    # volumes:
+    #   - ./storage-state.json:/app/storage-state.json
+    # environment:
+    #   - STORAGE_STATE=/app/storage-state.json
