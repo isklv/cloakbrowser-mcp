@@ -3,6 +3,7 @@ services:
     build: .
     container_name: cloakbrowser-mcp
     environment:
+      - CDP_HOST=0.0.0.0
       - CDP_PORT=9222
       - MCP_PORT=3000
       - HEADLESS=true

@@ -7,8 +7,8 @@ CLOAK_ARGS=()
 [ "${HEADLESS}" = "false" ] && CLOAK_ARGS+=(--headless=false)
 [ -n "${PROXY_SERVER}" ] && CLOAK_ARGS+=(--proxy-server="${PROXY_SERVER}")
 
-echo "🦊 Starting CloakBrowser CDP on :${CDP_PORT}..."
-cloakserve --remote-debugging-port="${CDP_PORT}" "${CLOAK_ARGS[@]}" &
+echo "🦊 Starting CloakBrowser CDP on ${CDP_HOST}:${CDP_PORT}..."
+cloakserve --host="${CDP_HOST}" --remote-debugging-port="${CDP_PORT}" "${CLOAK_ARGS[@]}" &
 CLOAK_PID=$!
 echo "   PID: ${CLOAK_PID}"
 
