@@ -3,6 +3,7 @@ set -e
 
 # ── 1. Start CloakBrowser (CDP backend) ──
 CLOAK_ARGS=()
+[ "${HEADLESS}" != "false" ] && CLOAK_ARGS+=(--headless=true)
 [ "${HEADLESS}" = "false" ] && CLOAK_ARGS+=(--headless=false)
 [ -n "${PROXY_SERVER}" ] && CLOAK_ARGS+=(--proxy-server="${PROXY_SERVER}")
 
