@@ -12,7 +12,7 @@
 │                                         │
 │  ┌──────────────┐    ┌───────────────┐ │
 │  │ CloakBrowser  │───▶│ @playwright/  │ │
-│  │ (CDP :8931)   │    │ mcp (:3000)  │ │
+│  │ (CDP :9222)   │    │ mcp (:3000)  │ │
 │  │ stealth       │    │ SSE transport │ │
 │  │ Chromium      │    │               │ │
 │  └──────────────┘    └───────────────┘ │
@@ -22,6 +22,15 @@
    CDP отладка      MCP клиенты
    (опционально)    (Claude, VS Code...)
 ```
+
+## Файлы проекта
+
+| Файл | Описание |
+|---|---|
+| `Dockerfile` | CloakBrowser + @playwright/mcp |
+| `docker-entrypoint.sh` | Запуск CDP → MCP |
+| `docker-compose.yml` | Compose-конфиг |
+| `*.container`, `*.image` | Quadlet (Bazzite/Fedora) |
 
 ## Быстрый старт
 
@@ -42,24 +51,6 @@ docker logs -f cloakbrowser-mcp
   "mcpServers": {
     "cloakbrowser": {
       "url": "http://localhost:3000"
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-```jsonc
-{
-  "mcpServers": {
-    "cloakbrowser": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic-ai/tool-usage@latest",
-        "proxy",
-        "http://localhost:3000"
-      ]
     }
   }
 }
@@ -112,7 +103,7 @@ mcpServers:
 
 | Переменная | По умолчанию | Описание |
 |---|---|---|
-| `CDP_PORT` | `8931` | Порт CDP (CloakBrowser) |
+| `CDP_PORT` | `9222` | Порт CDP (CloakBrowser) |
 | `MCP_PORT` | `3000` | Порт MCP-сервера (SSE) |
 | `HEADLESS` | `true` | `false` для headed режима |
 | `PROXY_SERVER` | `` | Прокси: `http://user:pass@host:port` |
@@ -124,9 +115,6 @@ mcpServers:
 ### С прокси
 
 ```bash
-docker compose up -d
-
-# или
 docker run -d --name cloakbrowser-mcp \
   -e PROXY_SERVER=http://user:pass@proxy:8080 \
   -p 3000:3000 \
@@ -155,13 +143,13 @@ docker run -d --name cloakbrowser-mcp \
 
 ## Прямой доступ к CDP
 
-Порт 8931 открыт для отладки. Подключайся из Playwright:
+Порт 9222 открыт для отладки. Подключайся из Playwright:
 
 ```python
 from playwright.sync_api import sync_playwright
 
 pw = sync_playwright().start()
-browser = pw.chromium.connect_over_cdp("http://localhost:8931")
+browser = pw.chromium.connect_over_cdp("http://localhost:9222")
 page = browser.new_page()
 page.goto("https://example.com")
 print(page.title())
@@ -183,11 +171,11 @@ docker push isklv/cloakbrowser-mcp:latest
 
 ## Безопасность
 
-⚠️ CDP даёт полный контроль над браузером. Не открывай порт 8931 в интернет без авторизации.
+⚠️ CDP даёт полный контроль над браузером. Не открывай порт 9222 в интернет без авторизации.
 
 ```bash
 # Безопасно — только localhost
-docker run -p 127.0.0.1:8931:8931 -p 127.0.0.1:3000:3000 ...
+docker run -p 127.0.0.1:9222:9222 -p 127.0.0.1:3000:3000 ...
 ```
 
 ## Лицензия

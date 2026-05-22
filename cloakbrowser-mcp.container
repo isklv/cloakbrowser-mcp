@@ -8,10 +8,10 @@ ContainerName=cloakbrowser-mcp
 
 # Ports
 PublishPort=3000:3000
-PublishPort=8931:8931
+PublishPort=9222:9222
 
 # Environment
-Environment=CDP_PORT=8931
+Environment=CDP_PORT=9222
 Environment=MCP_PORT=3000
 Environment=HEADLESS=true
 Environment=PROXY_SERVER=
@@ -22,7 +22,7 @@ MemoryLimit=4G
 CPUS=2
 
 # Healthcheck
-HealthcheckCmd=curl -sf http://127.0.0.1:8931/json/version || exit 1
+HealthcheckCmd=curl -sf http://127.0.0.1:9222/json/version || exit 1
 HealthcheckInterval=10s
 HealthcheckTimeout=5s
 HealthcheckStartPeriod=15s

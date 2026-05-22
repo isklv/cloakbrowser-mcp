@@ -3,13 +3,13 @@ services:
     build: .
     container_name: cloakbrowser-mcp
     environment:
-      - CDP_PORT=8931
+      - CDP_PORT=9222
       - MCP_PORT=3000
       - HEADLESS=true
       - PROXY_SERVER=
       - ISOLATED=false
     ports:
-      - "8931:8931"   # CDP (прямой доступ для отладки)
+      - "9222:9222"   # CDP (прямой доступ для отладки)
       - "3000:3000"   # MCP Server-Sent Events
     restart: unless-stopped
     # volumes:
