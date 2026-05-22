@@ -116,7 +116,7 @@ mcpServers:
 |---|---|---|---|
 | `MCP_HOST` | `0.0.0.0` | `--host` | Хост MCP-сервера |
 | `MCP_PORT` | `3000` | `--port` | Порт MCP-сервера (SSE) |
-| `MCP_ISOLATED` | `false` | `--isolated` | Изолированный браузерный контекст |
+| `MCP_ISOLATED` | _(не задан)_ | `--isolated` | Изолированный браузерный контекст |
 | `STORAGE_STATE` | `` | `--storage-state` | Путь к JSON с куками/localStorage |
 | `USER_DATA_DIR` | `` | `--user-data-dir` | Пользовательская директория профиля |
 | `VIEWPORT_SIZE` | `` | `--viewport-size` | Размер окна, напр. `1920x1080` |
@@ -155,6 +155,26 @@ mcpServers:
 | `SNAPSHOT_MODE` | `` | `--snapshot-mode` | Режим снимков: `full`, `none` |
 | `TEST_ID_ATTRIBUTE` | `` | `--test-id-attribute` | Атрибут для test-id (по умолч. `data-testid`) |
 
+## Образ
+
+Публикуется автоматически через GitHub Actions → GHCR:
+
+**https://ghcr.io/isklv/cloakbrowser-mcp**
+
+| Тег | Когда
+|---|---|
+| `latest` | Последний пуш в `main` |
+| `main` | Ветка main |
+| `sha-<commit>` | Конкретный коммит |
+| `v1.2.3`, `v1.2` | Семантические теги (`git tag v1.2.3`) |
+
+```bash
+# Использовать готовый образ
+docker run -d --name cloakbrowser-mcp \
+  -p 3000:3000 \
+  ghcr.io/isklv/cloakbrowser-mcp:latest
+```
+
 ## Примеры
 
 ### С прокси
@@ -163,7 +183,7 @@ mcpServers:
 docker run -d --name cloakbrowser-mcp \
   -e PROXY_SERVER=http://user:pass@proxy:8080 \
   -p 3000:3000 \
-  isklv/cloakbrowser-mcp
+  ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
 ### Headed режим (Xvfb)
@@ -172,18 +192,17 @@ docker run -d --name cloakbrowser-mcp \
 docker run -d --name cloakbrowser-mcp \
   -e HEADLESS=false \
   -p 3000:3000 \
-  isklv/cloakbrowser-mcp
+  ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
 ### Сохранение сессии
 
 ```bash
-# Mount storage state
 docker run -d --name cloakbrowser-mcp \
   -v ./storage-state.json:/app/storage-state.json \
   -e STORAGE_STATE=/app/storage-state.json \
   -p 3000:3000 \
-  isklv/cloakbrowser-mcp
+  ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
 ## Прямой доступ к CDP
@@ -200,19 +219,14 @@ page.goto("https://example.com")
 print(page.title())
 ```
 
-## Сборка
+## Сборка вручную
 
 ```bash
 cd cloakbrowser-mcp
 docker build -t cloakbrowser-mcp .
 ```
 
-## Push на Docker Hub
-
-```bash
-docker tag cloakbrowser-mcp isklv/cloakbrowser-mcp:latest
-docker push isklv/cloakbrowser-mcp:latest
-```
+Образ автоматически собирается и публикуется в GHCR при каждом пуше в `main` через [GitHub Actions](https://github.com/isklv/cloakbrowser-mcp/actions).
 
 ## Безопасность
 
