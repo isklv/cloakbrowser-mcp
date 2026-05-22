@@ -11,7 +11,9 @@ PublishPort=3000:3000
 PublishPort=9222:9222
 
 # Environment
+Environment=CDP_HOST=0.0.0.0
 Environment=CDP_PORT=9222
+Environment=MCP_HOST=0.0.0.0
 Environment=MCP_PORT=3000
 Environment=HEADLESS=true
 Environment=PROXY_SERVER=

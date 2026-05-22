@@ -26,7 +26,7 @@ done
 # ── 2. Start @playwright/mcp (MCP frontend) ──
 echo "🔧 Starting @playwright/mcp on :${MCP_PORT}..."
 
-MCP_ARGS=(--port "${MCP_PORT}")
+MCP_ARGS=(--port "${MCP_PORT}" --host "${MCP_HOST}")
 [ "${ISOLATED}" = "true" ] && MCP_ARGS+=(--isolated)
 [ -n "${STORAGE_STATE}" ] && MCP_ARGS+=(--storage-state="${STORAGE_STATE}")
 

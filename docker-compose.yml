@@ -5,6 +5,7 @@ services:
     environment:
       - CDP_HOST=0.0.0.0
       - CDP_PORT=9222
+      - MCP_HOST=0.0.0.0
       - MCP_PORT=3000
       - HEADLESS=true
       - PROXY_SERVER=
