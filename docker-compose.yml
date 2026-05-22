@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  cloakbrowser:
+    build: .
+    container_name: cloakbrowser
+    ports:
+      - "8931:8931"
+    environment:
+      - PORT=8931
+      - HOST=0.0.0.0
+      - HEADLESS=true
+      # - PROXY_SERVER=http://user:pass@proxy:8080
+    restart: unless-stopped
+    # Increase file descriptor limits for Chromium
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
