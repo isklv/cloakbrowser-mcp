@@ -1,9 +1,0 @@
-[Unit]
-Description=CloakBrowser MCP — stealth Chromium MCP server (image)
-
-[Image]
-Image=isklv/cloakbrowser-mcp:latest
-Pull=never
-
-[X-Quadlet]
-AutoUpdate=false

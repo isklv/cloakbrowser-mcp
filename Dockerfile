@@ -4,19 +4,17 @@
 
 FROM cloakhq/cloakbrowser:latest
 
-# Environment defaults
-# CDP_HOST — bind address for CloakBrowser CDP (0.0.0.0 = all interfaces)
-# CDP_PORT — CloakBrowser CDP (cloakserve default is 9222)
-# MCP_HOST — bind address for MCP server (0.0.0.0 = all interfaces)
-# MCP_PORT — @playwright/mcp HTTP/SSE transport
+# ── CloakBrowser (CDP backend) ──
 ENV CDP_HOST=0.0.0.0
 ENV CDP_PORT=9222
-ENV MCP_HOST=0.0.0.0
-ENV MCP_PORT=3000
 ENV HEADLESS=true
 ENV PROXY_SERVER=""
-ENV STORAGE_STATE=""
-ENV ISOLATED=false
+
+# ── @playwright/mcp (MCP frontend) ──
+# Note: optional flags are NOT set here by default.
+# Set them via docker run -e or docker-compose environment.
+ENV MCP_HOST=0.0.0.0
+ENV MCP_PORT=3000
 
 # Install @playwright/mcp (Node.js is already in cloakhq/cloakbrowser)
 RUN npm install -g @playwright/mcp@latest
