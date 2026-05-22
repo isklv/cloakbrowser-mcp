@@ -1,10 +1,10 @@
 # CloakBrowser MCP
 
-**Модельный контекстно-протокольный сервер** на базе [CloakBrowser](https://github.com/CloakHQ/CloakBrowser) — stealth Chromium с 26 C++ патчами.
+**MCP server** powered by [CloakBrowser](https://github.com/CloakHQ/CloakBrowser) — stealth Chromium with 26 C++ patches.
 
-Антидетект-браузер + MCP-сервер в одном Docker-образе. Подключай к Claude, Cursor, VS Code, Codex — любому MCP-клиенту.
+Anti-detect browser + MCP server in a single Docker image. Connect to Claude, Cursor, VS Code, Codex — any MCP client.
 
-## Архитектура
+## Architecture
 
 ```
 ┌─────────────────────────────────────────┐
@@ -19,30 +19,29 @@
 └─────────────────────────────────────────┘
        │                    │
        ▼                    ▼
-   CDP отладка      MCP клиенты
-   (опционально)    (Claude, VS Code...)
+   CDP debugging      MCP clients
+   (optional)         (Claude, VS Code...)
 ```
 
-## Файлы проекта
+## Project Files
 
-| Файл | Описание |
+| File | Description |
 |---|---|
 | `Dockerfile` | CloakBrowser + @playwright/mcp |
-| `docker-entrypoint.sh` | Запуск CDP → MCP |
-| `docker-compose.yml` | Compose-конфиг |
+| `docker-entrypoint.sh` | Startup: CDP → MCP |
+| `docker-compose.yml` | Compose config |
 
-
-## Быстрый старт
+## Quick Start
 
 ```bash
-# Запуск
+# Run
 docker compose up -d
 
-# Проверка
+# Check logs
 docker logs -f cloakbrowser-mcp
 ```
 
-## Подключение к MCP-клиенту
+## Connecting MCP Clients
 
 ### VS Code / Cursor / Windsurf
 
@@ -62,7 +61,7 @@ docker logs -f cloakbrowser-mcp
 codex mcp add cloakbrowser http://localhost:3000
 ```
 
-Или в `~/.codex/config.toml`:
+Or in `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.cloakbrowser]
@@ -77,107 +76,106 @@ mcpServers:
     url: http://localhost:3000
 ```
 
-## Что умеет
+## Capabilities
 
-Все инструменты `@playwright/mcp`:
+All `@playwright/mcp` tools:
 
-| Инструмент | Описание |
+| Tool | Description |
 |---|---|
-| `browser_navigate` | Переход по URL |
-| `browser_snapshot` | Accessibility-снимок страницы |
-| `browser_click` | Клик по элементу |
-| `browser_type` | Ввод текста |
-| `browser_select_option` | Выбор в dropdown |
-| `browser_hover` | Наведение курсора |
-| `browser_press_key` | Нажатие клавиши |
-| `browser_file_upload` | Загрузка файлов |
+| `browser_navigate` | Navigate to URL |
+| `browser_snapshot` | Accessibility snapshot |
+| `browser_click` | Click element |
+| `browser_type` | Type text |
+| `browser_select_option` | Select dropdown option |
+| `browser_hover` | Hover over element |
+| `browser_press_key` | Press key |
+| `browser_file_upload` | Upload files |
 | `browser_drag` | Drag & drop |
-| `browser_screenshot` | Скриншот |
-| `browser_evaluate` | Выполнение JS |
-| `browser_network_requests` | Лог сетевых запросов |
-| `browser_tabs` | Управление вкладками |
-| `browser_wait_for` | Ожидание элементов |
-| `browser_go_back/forward` | Навигация |
+| `browser_screenshot` | Take screenshot |
+| `browser_evaluate` | Execute JavaScript |
+| `browser_network_requests` | Network request log |
+| `browser_tabs` | Tab management |
+| `browser_wait_for` | Wait for elements |
+| `browser_go_back/forward` | Navigation |
 
-## Переменные окружения
+## Environment Variables
 
-### CloakBrowser (CDP backend)
+### CloakBrowser (CDP Backend)
 
-| Переменная | По умолчанию | Описание |
+| Variable | Default | Description |
 |---|---|---|
-| `CDP_HOST` | `0.0.0.0` | Хост для CloakBrowser CDP |
-| `CDP_PORT` | `9222` | Порт CDP (CloakBrowser) |
-| `HEADLESS` | `true` | `false` для headed режима (требует X11) |
-| `PROXY_SERVER` | `` | Прокси-сервер: `http://user:pass@host:port` |
+| `CDP_HOST` | `0.0.0.0` | CloakBrowser CDP bind address |
+| `CDP_PORT` | `9222` | CloakBrowser CDP port |
+| `HEADLESS` | `true` | Set to `false` for headed mode (requires X11) |
+| `PROXY_SERVER` | _(unset)_ | Proxy: `http://user:pass@host:port` |
 
-### @playwright/mcp (MCP frontend)
+### @playwright/mcp (MCP Frontend)
 
-| Переменная | По умолчанию | Флаг MCP | Описание |
+| Variable | Default | MCP Flag | Description |
 |---|---|---|---|
-| `MCP_HOST` | `0.0.0.0` | `--host` | Хост MCP-сервера |
-| `MCP_PORT` | `3000` | `--port` | Порт MCP-сервера (SSE) |
-| `MCP_ISOLATED` | _(не задан)_ | `--isolated` | Изолированный браузерный контекст |
-| `STORAGE_STATE` | `` | `--storage-state` | Путь к JSON с куками/localStorage |
-| `USER_DATA_DIR` | `` | `--user-data-dir` | Пользовательская директория профиля |
-| `VIEWPORT_SIZE` | `` | `--viewport-size` | Размер окна, напр. `1920x1080` |
-| `DEVICE` | `` | `--device` | Эмуляция устройства, напр. `iPhone 15` |
-| `USER_AGENT` | `` | `--user-agent` | Кастомный User-Agent |
-| `CAPS` | `` | `--caps` | Способности (через запятую), напр. `core,network,vision` |
-| `PROXY_BYPASS` | `` | `--proxy-bypass` | Пропускать через прокси, напр. `localhost,*.internal.com` |
-| `TIMEOUT_ACTION` | `` | `--timeout-action` | Таймаут действия в мс (по умолч. 5000) |
-| `TIMEOUT_NAVIGATION` | `` | `--timeout-navigation` | Таймаут навигации в мс (по умолч. 60000) |
-| `CONSOLE_LEVEL` | `` | `--console-level` | Уровень лога: `error`, `warning`, `info`, `debug` |
-| `IGNORE_HTTPS_ERRORS` | `false` | `--ignore-https-errors` | Игнорировать ошибки HTTPS |
-| `BLOCK_SERVICE_WORKERS` | `false` | `--block-service-workers` | Блокировать Service Workers |
-| `BLOCKED_ORIGINS` | `` | `--blocked-origins` | Запрещённые домены (через запятую) |
-| `ALLOWED_ORIGINS` | `` | `--allowed-origins` | Разрешённые домены (через запятую) |
-| `GRANT_PERMISSIONS` | `` | `--grant-permissions` | Разрешения браузера (через запятую) |
-| `SAVE_SESSION` | `false` | `--save-session` | Сохранять данные сессии |
-| `OUTPUT_DIR` | `` | `--output-dir` | Директория для вывода |
-| `INIT_SCRIPT` | `` | `--init-script` | Путь к JS-скрипту инициализации |
-| `INIT_PAGE` | `` | `--init-page` | Путь к TS-скрипту инициализации страницы |
-| `SECRETS_FILE` | `` | `--secrets` | Путь к dotenv-файлу с секретами |
-| `ALLOW_UNRESTRICTED_FILE_ACCESS` | `false` | `--allow-unrestricted-file-access` | Доступ к файлам вне workspace |
-| `BROWSER` | `` | `--browser` | Браузер: `chrome`, `firefox`, `webkit`, `msedge` |
-| `CDP_HEADERS` | `` | `--cdp-header` | Заголовки CDP-запроса |
-| `CDP_TIMEOUT` | `` | `--cdp-timeout` | Таймаут подключения к CDP в мс |
-| `CODEGEN` | `` | `--codegen` | Язык генерации кода: `typescript`, `none` |
-| `MCP_CONFIG` | `` | `--config` | Путь к конфигурационному файлу |
-| `EXECUTABLE_PATH` | `` | `--executable-path` | Путь к бинарнику браузера |
-| `EXTENSION` | `false` | `--extension` | Подключение через Playwright Extension |
-| `MCP_HEADLESS` | `` | `--headless` | Запуск браузера в headless-режиме |
-| `IMAGE_RESPONSES` | `` | `--image-responses` | Режим изображений: `allow`, `omit` |
-| `NO_SANDBOX` | `false` | `--no-sandbox` | Отключить sandbox браузера |
-| `OUTPUT_MODE` | `` | `--output-mode` | Режим вывода: `file`, `stdout` |
-| `MCP_PROXY_SERVER` | `` | `--proxy-server` | Прокси для MCP (отдельно от CloakBrowser) |
-| `SANDBOX` | `false` | `--sandbox` | Включить sandbox браузера |
-| `SHARED_BROWSER_CONTEXT` | `false` | `--shared-browser-context` | Общий контекст для всех клиентов |
-| `SNAPSHOT_MODE` | `` | `--snapshot-mode` | Режим снимков: `full`, `none` |
-| `TEST_ID_ATTRIBUTE` | `` | `--test-id-attribute` | Атрибут для test-id (по умолч. `data-testid`) |
+| `MCP_HOST` | `0.0.0.0` | `--host` | MCP server bind address |
+| `MCP_PORT` | `3000` | `--port` | MCP server port (SSE) |
+| `MCP_ISOLATED` | _(unset)_ | `--isolated` | In-memory browser profile |
+| `STORAGE_STATE` | _(unset)_ | `--storage-state` | Path to cookies/localStorage JSON |
+| `USER_DATA_DIR` | _(unset)_ | `--user-data-dir` | Custom browser profile directory |
+| `VIEWPORT_SIZE` | _(unset)_ | `--viewport-size` | Window size, e.g. `1920x1080` |
+| `DEVICE` | _(unset)_ | `--device` | Device emulation, e.g. `iPhone 15` |
+| `USER_AGENT` | _(unset)_ | `--user-agent` | Custom User-Agent |
+| `CAPS` | _(unset)_ | `--caps` | Comma-separated capabilities: `vision`, `pdf`, `devtools` |
+| `PROXY_BYPASS` | _(unset)_ | `--proxy-bypass` | Bypass proxy for domains, e.g. `localhost,*.internal.com` |
+| `TIMEOUT_ACTION` | _(unset)_ | `--timeout-action` | Action timeout in ms (default 5000) |
+| `TIMEOUT_NAVIGATION` | _(unset)_ | `--timeout-navigation` | Navigation timeout in ms (default 60000) |
+| `CONSOLE_LEVEL` | _(unset)_ | `--console-level` | Console log level: `error`, `warning`, `info`, `debug` |
+| `IGNORE_HTTPS_ERRORS` | _(unset)_ | `--ignore-https-errors` | Ignore HTTPS errors |
+| `BLOCK_SERVICE_WORKERS` | _(unset)_ | `--block-service-workers` | Block service workers |
+| `BLOCKED_ORIGINS` | _(unset)_ | `--blocked-origins` | Blocked origins (semicolon-separated) |
+| `ALLOWED_ORIGINS` | _(unset)_ | `--allowed-origins` | Allowed origins (semicolon-separated) |
+| `GRANT_PERMISSIONS` | _(unset)_ | `--grant-permissions` | Browser permissions (comma-separated) |
+| `SAVE_SESSION` | _(unset)_ | `--save-session` | Save session to output directory |
+| `OUTPUT_DIR` | _(unset)_ | `--output-dir` | Output directory for files |
+| `INIT_SCRIPT` | _(unset)_ | `--init-script` | Path to JS init script |
+| `INIT_PAGE` | _(unset)_ | `--init-page` | Path to TS page init script |
+| `SECRETS_FILE` | _(unset)_ | `--secrets` | Path to dotenv secrets file |
+| `ALLOW_UNRESTRICTED_FILE_ACCESS` | _(unset)_ | `--allow-unrestricted-file-access` | Allow file access outside workspace |
+| `BROWSER` | _(unset)_ | `--browser` | Browser: `chrome`, `firefox`, `webkit`, `msedge` |
+| `CDP_HEADERS` | _(unset)_ | `--cdp-header` | CDP request headers |
+| `CDP_TIMEOUT` | _(unset)_ | `--cdp-timeout` | CDP connection timeout in ms |
+| `CODEGEN` | _(unset)_ | `--codegen` | Codegen language: `typescript`, `none` |
+| `MCP_CONFIG` | _(unset)_ | `--config` | Path to MCP config file |
+| `EXECUTABLE_PATH` | _(unset)_ | `--executable-path` | Path to browser executable |
+| `EXTENSION` | _(unset)_ | `--extension` | Connect via Playwright Extension |
+| `MCP_HEADLESS` | _(unset)_ | `--headless` | Run browser in headless mode |
+| `IMAGE_RESPONSES` | _(unset)_ | `--image-responses` | Image responses: `allow`, `omit` |
+| `NO_SANDBOX` | _(unset)_ | `--no-sandbox` | Disable browser sandbox |
+| `OUTPUT_MODE` | _(unset)_ | `--output-mode` | Output mode: `file`, `stdout` |
+| `MCP_PROXY_SERVER` | _(unset)_ | `--proxy-server` | Proxy for MCP (separate from CloakBrowser) |
+| `SANDBOX` | _(unset)_ | `--sandbox` | Enable browser sandbox |
+| `SHARED_BROWSER_CONTEXT` | _(unset)_ | `--shared-browser-context` | Share browser context across clients |
+| `SNAPSHOT_MODE` | _(unset)_ | `--snapshot-mode` | Snapshot mode: `full`, `none` |
+| `TEST_ID_ATTRIBUTE` | _(unset)_ | `--test-id-attribute` | Test ID attribute (default `data-testid`) |
 
-## Образ
+## Docker Image
 
-Публикуется автоматически через GitHub Actions → GHCR:
+Automatically built and published via GitHub Actions → GHCR:
 
 **https://ghcr.io/isklv/cloakbrowser-mcp**
 
-| Тег | Когда
+| Tag | When |
 |---|---|
-| `latest` | Последний пуш в `main` |
-| `main` | Ветка main |
-| `sha-<commit>` | Конкретный коммит |
-| `v1.2.3`, `v1.2` | Семантические теги (`git tag v1.2.3`) |
+| `latest` | Latest push to `main` |
+| `main` | Main branch |
+| `sha-<commit>` | Specific commit |
+| `v1.2.3`, `v1.2` | Semantic version tags (`git tag v1.2.3`) |
 
 ```bash
-# Использовать готовый образ
 docker run -d --name cloakbrowser-mcp \
   -p 3000:3000 \
   ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
-## Примеры
+## Examples
 
-### С прокси
+### With Proxy
 
 ```bash
 docker run -d --name cloakbrowser-mcp \
@@ -186,7 +184,7 @@ docker run -d --name cloakbrowser-mcp \
   ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
-### Headed режим (Xvfb)
+### Headed Mode (Xvfb)
 
 ```bash
 docker run -d --name cloakbrowser-mcp \
@@ -195,7 +193,7 @@ docker run -d --name cloakbrowser-mcp \
   ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
-### Сохранение сессии
+### Persist Session
 
 ```bash
 docker run -d --name cloakbrowser-mcp \
@@ -205,9 +203,9 @@ docker run -d --name cloakbrowser-mcp \
   ghcr.io/isklv/cloakbrowser-mcp:latest
 ```
 
-## Прямой доступ к CDP
+## Direct CDP Access
 
-Порт 9222 открыт для отладки. Подключайся из Playwright:
+Port 9222 is exposed for debugging. Connect from Playwright:
 
 ```python
 from playwright.sync_api import sync_playwright
@@ -219,24 +217,24 @@ page.goto("https://example.com")
 print(page.title())
 ```
 
-## Сборка вручную
+## Build Manually
 
 ```bash
 cd cloakbrowser-mcp
 docker build -t cloakbrowser-mcp .
 ```
 
-Образ автоматически собирается и публикуется в GHCR при каждом пуше в `main` через [GitHub Actions](https://github.com/isklv/cloakbrowser-mcp/actions).
+The image is automatically built and published to GHCR on every push to `main` via [GitHub Actions](https://github.com/isklv/cloakbrowser-mcp/actions).
 
-## Безопасность
+## Security
 
-⚠️ CDP даёт полный контроль над браузером. Не открывай порт 9222 в интернет без авторизации.
+⚠️ CDP gives full control over the browser. Never expose port 9222 to the internet without authentication.
 
 ```bash
-# Безопасно — только localhost
+# Safe — localhost only
 docker run -p 127.0.0.1:9222:9222 -p 127.0.0.1:3000:3000 ...
 ```
 
-## Лицензия
+## License
 
 MIT. CloakBrowser binary — [Binary License](https://github.com/CloakHQ/CloakBrowser/blob/main/BINARY-LICENSE.md).
